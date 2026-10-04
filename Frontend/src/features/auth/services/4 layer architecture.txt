@@ -1,0 +1,24 @@
+4 layer architecture
+
+UI
+=>components
+=>pages
+
+HOOK.....for managing of both state and api layer
+=> hooks
+auth ke andr folder hooks and file useAuth.js
+
+
+STATE.....user ka data store to show on frontend
+=> auth.context.jsx
+=> ai.context.jsx
+
+
+API.....frontend and backend ki apis se connect
+=> services (auth folder ke inside)
+=>auth.services.js 
+
+services folder m ai.service.js bnayge jisme ai hume report dega or hum usse cheeze dege
+
+now in routes folder , interview.routes.js in which we will create an api in which we give it our self and job description in text format
+and a pdf of our resume and then generate an interview report from it.
