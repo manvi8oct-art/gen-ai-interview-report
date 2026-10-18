@@ -1,6 +1,6 @@
 const pdfParse = require('pdf-parse')
 
-const generateInterviewReport = require('../services/ai.service')
+const {generateInterviewReport, generateResumePdf} = require('../services/ai.service')
 const interviewReportModel = require('../models/interviewReport.model')
 
 
@@ -136,9 +136,54 @@ async function getInterviewReportsController(req, res) {
     })
 }
 
+/**
+ * @description This controller is responsible for generating a PDF version of the interview report
+ */
+async function generateResumePdfController(req, res) {
+
+    const { interviewReportId } = req.params
+
+    const interviewReport = await interviewReportModel.findById(interviewReportId)
+
+    if (!interviewReport) {
+        return res.status(404).json({
+            message: "Interview Report not found"
+        })
+    }
+    const {resume , selfDescription, jobDescription} = interviewReport
+    let pdfBuffer
+    try {
+        pdfBuffer = await generateResumePdf({resume, selfDescription, jobDescription})
+    } catch (error) {
+        console.error("Error generating interview report PDF:", error)
+        const configurationError = error.code === "AI_CONFIG_MISSING"
+        const providerStatus = Number(error.status)
+        const providerUnavailable = [429, 500, 502, 503, 504].includes(providerStatus)
+        const responseStatus = configurationError ? 503 : providerUnavailable ? 503 : 502
+
+        return res.status(responseStatus).json({
+            message: configurationError
+                ? "PDF generation is not configured. Set GOOGLE_GENAI_API_KEY in the backend environment."
+                : providerUnavailable
+                    ? "The AI service is temporarily busy or unavailable. Please try again in a minute."
+                    : Number.isInteger(providerStatus) && providerStatus >= 400
+                        ? `Gemini rejected the PDF request (HTTP ${providerStatus}). Check the backend logs for details.`
+                        : "The PDF could not be generated. Check the backend logs for details."
+        })
+    }
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', `attachment; filename=interview_report_${interviewReportId}.pdf`)
+    res.send(pdfBuffer)
+
+
+}
+ 
+
 
 module.exports = {
     generateInterviewReportController,
     getInterviewReportControllerById,
-    getInterviewReportsController
+    getInterviewReportsController,
+    generateResumePdfController
 }
