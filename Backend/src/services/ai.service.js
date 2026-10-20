@@ -1,6 +1,6 @@
 const {GoogleGenAI} = require('@google/genai')
 const {z} = require('zod')
-const puppeteer = require('puppeteer');
+
 
 // const { resume } = require('./temp');
 
@@ -160,16 +160,33 @@ preparationPlan: [
     throw error;
 }}
 
-// Function to generate PDF from HTML content using Puppeteer
-async function generatePdfFromHtml(htmlContent) {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-  const pdfBuffer = await page.pdf({ format: 'A4' });
-  await browser.close();
-  return pdfBuffer;
 
+async function generatePdfFromHtml(htmlContent) {
+    const puppeteer = await import("puppeteer");
+
+    const browser = await puppeteer.default.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
+
+    try {
+        const page = await browser.newPage();
+
+        await page.setContent(htmlContent, {
+            waitUntil: "networkidle0"
+        });
+
+        const pdfBuffer = await page.pdf({
+            format: "A4",
+            printBackground: true
+        });
+
+        return Buffer.from(pdfBuffer);
+    } finally {
+        await browser.close();
+    }
 }
+
 
 
 //Ai se html generate and then pupeeter package will use html to generate pdf and return it to the user
