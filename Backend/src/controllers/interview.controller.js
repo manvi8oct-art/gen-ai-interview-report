@@ -1,4 +1,7 @@
-const pdfParse = require('pdf-parse')
+
+const { CanvasFactory } = require("pdf-parse/worker");
+const { PDFParse } = require("pdf-parse");
+
 
 const {generateInterviewReport, generateResumePdf} = require('../services/ai.service')
 const interviewReportModel = require('../models/interviewReport.model')
@@ -33,7 +36,10 @@ async function generateInterviewReportController(req, res) {
     if (req.file) {
         let pdfParser
         try {
-            pdfParser = new pdfParse.PDFParse({ data: req.file.buffer })
+            pdfParser = new PDFParse({
+    data: new Uint8Array(req.file.buffer),
+    CanvasFactory
+});
             resumeContent = await pdfParser.getText()
         } catch (error) {
             console.error("Error parsing uploaded resume:", error)
