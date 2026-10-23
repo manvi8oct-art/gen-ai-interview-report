@@ -2,7 +2,7 @@ import axios from "axios"
 
 
 const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: "https://gen-ai-interview-report-pn3j-i5hn9nv0f-manvi-79a8.vercel.app",
     withCredentials: true
 
 })
