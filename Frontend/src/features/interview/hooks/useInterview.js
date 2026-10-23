@@ -1,4 +1,4 @@
-import {generateInterviewReport, getAllInterviewReports, getInterviewReportById} from '../services/interview.api'
+import {generateInterviewReport, getAllInterviewReports, getInterviewReportById, generateResumePdf} from '../services/interview.api'
 import {useCallback, useContext} from 'react'
 import {InterviewContext} from '../interview.context'
 
@@ -24,8 +24,7 @@ export const useInterview = () => {
         } finally {
             setLoading(false)
         }
-        return response.interviewReport
-}
+    }
 
 const getReportById = useCallback(async (interviewId) => {
     setLoading(true)
@@ -51,12 +50,35 @@ const getAllReports = useCallback(async () => {
     }
 }, [setReports])
 
+const generateResumePdfFile = async (interviewReportId) => {
+  setLoading(true)
+    let response = null
+    try {
+        response = await generateResumePdf({interviewReportId}) 
+        const url = window.URL.createObjectURL(new Blob([response], {type: 'application/pdf'}));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `resume_${interviewReportId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+    } catch (error) {
+        console.error('Error generating resume PDF:', error)
+        throw error
+    }   finally {
+        setLoading(false)
+    }
+}
+
+
 return {
     loading,
     report,
     reports,
     generateReport,
     getReportById,
-    getAllReports
+    getAllReports,
+    generateResumePdf: generateResumePdfFile
 }
 }
+

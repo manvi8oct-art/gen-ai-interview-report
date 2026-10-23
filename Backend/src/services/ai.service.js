@@ -1,8 +1,8 @@
 const {GoogleGenAI} = require('@google/genai')
 const {z} = require('zod')
-const puppeteer = require('puppeteer');
 
-// const { resume } = require('./temp');
+
+
 
 
 
@@ -160,24 +160,46 @@ preparationPlan: [
     throw error;
 }}
 
-// Function to generate PDF from HTML content using Puppeteer
 async function generatePdfFromHtml(htmlContent) {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-  const pdfBuffer = await page.pdf({ format: 'A4' });
-  await browser.close();
-  return pdfBuffer;
+    const puppeteer = await import("puppeteer");
 
+    const browser = await puppeteer.default.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
+
+    try {
+        const page = await browser.newPage();
+
+        await page.setContent(htmlContent, {
+            waitUntil: "networkidle0"
+        });
+
+        const pdfBuffer = await page.pdf({
+            format: "A4",
+            printBackground: true
+        });
+
+        return Buffer.from(pdfBuffer);
+    } finally {
+        await browser.close();
+    }
 }
 
+async function generateResumePdf({ resume, selfDescription, jobDescription }) {
+    if (!process.env.GOOGLE_GENAI_API_KEY) {
+        const error = new Error("GOOGLE_GENAI_API_KEY is not configured");
+        error.code = "AI_CONFIG_MISSING";
+        throw error;
+    }
 
-//Ai se html generate and then pupeeter package will use html to generate pdf and return it to the user
-async function generateResumePdf({resume , selfDescription, jobDescription}) {
+    // Iske neeche generateResumePdf ka baaki existing code rehne do.
   const resumePdfSchema = z.object({
     html: z.string().describe("The HTML content of the resume to be converted to PDF using Puppeteer package")
 
   })
+const resumePdfJsonSchema = z.toJSONSchema(resumePdfSchema)
+delete resumePdfJsonSchema.$schema
   const prompt = `Generate an HTML content for the resume based on the information below: 
   Resume: ${resume}
   Self Description: ${selfDescription}
@@ -185,16 +207,37 @@ async function generateResumePdf({resume , selfDescription, jobDescription}) {
 
   the response should be a valid HTML content that can be converted to PDF using Puppeteer package. The HTML content should be well-structured and formatted, and should include the resume, self description, and job description in a clear and organized manner. The HTML content should also include appropriate headings, paragraphs, and lists to present the information in a readable format. The HTML content should be responsive and should look good on different screen sizes. The HTML content should also include appropriate CSS styles to enhance the visual appearance of the resume. The HTML content should be compatible with Puppeteer package for PDF generation.
   `
+let response
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3.6-flash",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseJsonSchema: zodtoJSONSchema(resumePdfSchema)
+for (let index = 0; index < generationModels.length; index += 1) {
+  const model = generationModels[index]
+
+  try {
+    response = await ai.models.generateContent({
+      model,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseJsonSchema: resumePdfJsonSchema
+      }
+    })
+
+    break
+  } catch (error) {
+    const hasFallback = index < generationModels.length - 1
+
+    if (!hasFallback || !retryableStatuses.has(error.status)) {
+      throw error
     }
-  })
-  const jsonContent = JSON.parse(response.text)
+
+    console.warn(
+      `Gemini model ${model} returned HTTP ${error.status}; trying fallback model.`
+    )
+  }
+}
+
+const jsonContent = resumePdfSchema.parse(JSON.parse(response.text))
+
   const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
   return pdfBuffer
 }
