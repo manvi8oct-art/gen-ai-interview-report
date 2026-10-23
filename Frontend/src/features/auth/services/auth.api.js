@@ -8,10 +8,10 @@ const api = axios.create({
 })
 
 //frontend h vo kese interact krega with backend usika code---
-export async function register(username, email, password) {
+export async function register(userName, email, password) {
    try {
     const response = await api.post('/api/auth/register', {
-    username, email , password
+    userName, email , password
    })
    return response.data
 } catch(err) {
