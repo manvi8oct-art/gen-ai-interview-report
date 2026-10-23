@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://gen-ai-interview-report-pn3j-i5hn9nv0f-manvi-79a8.vercel.app",
+    baseURL: "https://gen-ai-interview-report-pn3j.vercel.app/",
     withCredentials: true
 });
 
