@@ -5,12 +5,30 @@ const cors = require("cors")
 const multer = require("multer")
 
 
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "https://gen-ai-interview-report-nine.vercel.app"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Origin not allowed by CORS"));
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175","https://gen-ai-interview-report-nine.vercel.app"],
-    credentials: true
-}))
+
+
+
 
 //require all the routes here 
 const authRouter = require("./routes/authroutes");
