@@ -20,6 +20,11 @@ const interviewRouter = require("./routes/interview.routes");
 //using all the routes here
 app.use("/api/auth", authRouter);
 app.use("/api/interview", interviewRouter);
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Gen-AI Interview Report API is running"
+  });
+});
 
 app.use((error, req, res, next) => {
     if (res.headersSent) {
