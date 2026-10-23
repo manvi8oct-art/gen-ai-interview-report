@@ -3,6 +3,8 @@ const app = express();
 const cookieParser = require('cookie-parser');
 const cors = require("cors")
 const multer = require("multer")
+const connectDB = require("./config/database");
+
 
 
 
@@ -26,6 +28,27 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser());
+
+let dbConnectionPromise;
+
+app.use(async (req, res, next) => {
+    try {
+        if (!dbConnectionPromise) {
+            dbConnectionPromise = connectDB().catch((error) => {
+                dbConnectionPromise = null;
+                throw error;
+            });
+        }
+
+        await dbConnectionPromise;
+        next();
+    } catch (error) {
+        console.error("Database connection error:", error.message);
+        res.status(503).json({
+            message: "Database connection failed. Please try again later."
+        });
+    }
+});
 
 
 
