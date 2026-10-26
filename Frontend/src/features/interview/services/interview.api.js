@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://gen-ai-interview-report-pn3j.vercel.app/",
+    baseURL: import.meta.env.VITE_API_BASE_URL || "",
     withCredentials: true
 });
 

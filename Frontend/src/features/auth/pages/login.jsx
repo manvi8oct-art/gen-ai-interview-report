@@ -8,12 +8,18 @@ const LoginPage = () => {
 
   const [email, setEmail ] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
 
   const navigate = useNavigate();
         const handleSubmit = async (e) => {
           e.preventDefault()
-          await handleLogin({email, password})
-          navigate('/dashboard')
+          setError("")
+          try {
+            await handleLogin({email, password})
+            navigate('/dashboard')
+          } catch (err) {
+            setError(err.response?.data?.message || "Login failed. Please try again.")
+          }
 
         }
 
@@ -25,6 +31,7 @@ const LoginPage = () => {
     <main>
       <div className='form-container'>
         <h1>Login</h1>
+        {error && <p role="alert">{error}</p>}
         <form onSubmit={handleSubmit}>
           <div className='input-form'>
             <label htmlFor='email'> email </label>

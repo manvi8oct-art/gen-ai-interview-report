@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://gen-ai-interview-report-pn3j.vercel.app/api/:path*"
+    }
+  ]
+}

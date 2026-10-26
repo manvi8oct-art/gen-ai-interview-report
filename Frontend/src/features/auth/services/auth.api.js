@@ -2,21 +2,17 @@ import axios from "axios"
 
 
 const api = axios.create({
-    baseURL: "https://gen-ai-interview-report-pn3j.vercel.app/",
+    baseURL: import.meta.env.VITE_API_BASE_URL || "",
     withCredentials: true
 
 })
 
 //frontend h vo kese interact krega with backend usika code---
-export async function register(userName, email, password) {
-   try {
+export async function register({userName, email, password}) {
     const response = await api.post('/api/auth/register', {
     userName, email , password
    })
    return response.data
-} catch(err) {
-    console.log(err)
-}
 }
 
 export async function login({email, password}) {
@@ -43,11 +39,7 @@ export async function logout() {
 }
 
 export async function getMe() {
-    try{
-        const response = await api.get('/api/auth/get-me')
+    const response = await api.get('/api/auth/get-me')
 
     return response.data 
-    } catch(err) {
-        console.log(err)
-    }
 }

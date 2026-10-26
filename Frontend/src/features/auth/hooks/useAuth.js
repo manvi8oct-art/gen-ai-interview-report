@@ -15,7 +15,7 @@ export const useAuth = () => {  //wrapper function,, custom hook
         const data = await login({email , password}) //server ko email pass bhejega and waits for his call
     setUser(data.user) //api se jo call usse save, api se jo info aai vo data m save
     } catch(err){
-        
+        throw err
     } finally{
     setLoading(false)
     }
@@ -27,7 +27,7 @@ export const useAuth = () => {  //wrapper function,, custom hook
     const data = await register({userName,email,password})
     setUser(data.user)
         } catch(err) {
-
+            throw err
         } finally{
     setLoading(false)
     }

@@ -8,12 +8,18 @@ const RegisterPage = () => {
   const [username, setUsername ] = useState("")
   const[ email, setEmail] = useState("")
   const[ password, setPassword ] = useState("")
+  const [error, setError] = useState("")
 
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await handleRegister({username, email, password})
-    navigate('/dashboard')
+    setError("")
+    try {
+      await handleRegister({userName: username, email, password})
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed. Please try again.")
+    }
   }
 
   if(loading) {
@@ -24,6 +30,7 @@ const RegisterPage = () => {
      <main>
       <div className='form-container'>
         <h1>Register</h1>
+        {error && <p role="alert">{error}</p>}
         <form onSubmit={handleSubmit}>
               
           
