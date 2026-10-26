@@ -162,11 +162,19 @@ preparationPlan: [
 
 async function generatePdfFromHtml(htmlContent) {
     const puppeteer = await import("puppeteer");
-
-    const browser = await puppeteer.default.launch({
+    const launchOptions = {
         headless: true,
         args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
+    };
+
+    if (process.env.VERCEL) {
+        const chromium = (await import("@sparticuz/chromium")).default;
+        launchOptions.args = chromium.args;
+        launchOptions.executablePath = await chromium.executablePath();
+        launchOptions.headless = "shell";
+    }
+
+    const browser = await puppeteer.default.launch(launchOptions);
 
     try {
         const page = await browser.newPage();
