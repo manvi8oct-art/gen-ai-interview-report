@@ -25,7 +25,7 @@ export const generateInterviewReport = async ({
     formData.append("selfDescription", selfDescription);
     formData.append("jobDescription", jobDescription);
 
-    const response = await api.post("/api/interview/", formData, {
+    const response = await api.post("/api/interview", formData, {
         withCredentials: true
     });
 
